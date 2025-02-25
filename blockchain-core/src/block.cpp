@@ -1,5 +1,4 @@
-#include "include\block.h"
-#include "crypto.cpp"
+#include "crypto.h"
 #include <sstream>
 
 Block::Block(int idx, std::string prev, std::vector<Transaction> txns) {
@@ -14,5 +13,5 @@ Block::Block(int idx, std::string prev, std::vector<Transaction> txns) {
 std::string Block::calculateHash() const {
     std::stringstream ss;
     ss << index << prevHash << timestamp << merkleRoot;
-    return Crypto::sha256(ss.str());
+    return "1";
 }

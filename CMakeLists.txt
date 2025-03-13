@@ -4,7 +4,7 @@ project(decentweet LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(BLOCKCHAIN_CORE_DIR ${CMAKE_SOURCE_DIR}/blockchain-core)
+set(BLOCKCHAIN_CORE_DIR ${CMAKE_SOURCE_DIR})
 include_directories(${BLOCKCHAIN_CORE_DIR}/include)
 
 file(GLOB SOURCES

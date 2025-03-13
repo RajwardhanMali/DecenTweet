@@ -5,7 +5,7 @@
 #include "transaction.h"
 
 class Block{
-    int blockId;
+    uint32_t blockId;
     std::vector <Transaction> transactions;
     std::string previousHash;
     std::string currentHash;

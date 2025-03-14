@@ -3,7 +3,9 @@
 #include <iomanip>
 
 namespace Crypto{
-    std::string sha256(const std::string& data) {   // https://terminalroot.com/how-to-generate-sha256-hash-with-cpp-and-openssl
+    std::string sha256(const std::string& data) {   
+        // i literally got this off a stackoverflow answer - this works fine though
+        // https://terminalroot.com/how-to-generate-sha256-hash-with-cpp-and-openssl
         unsigned char hash[SHA256_DIGEST_LENGTH];
         SHA256_CTX sha256;
         SHA256_Init(&sha256);
@@ -17,7 +19,9 @@ namespace Crypto{
         return ss.str();
     }
 
-    std::string serializeTransaction(const Transaction& txn){ // convert the Transaction struct to a string - that's serialization - basically converting a complex data structure to a simple one
+    std::string serialize_transaction(const Transaction& txn){ 
+        // convert the Transaction struct to a string - that's serialization - basically converting a complex data structure to a simple one
+        // this will make it easier to hash it using sha256
         std::stringstream ss;   
         ss << static_cast<int>(txn.interaction_type)
            << txn.transaction_id
@@ -52,5 +56,32 @@ namespace Crypto{
         }
 
         return ss.str();
+    }
+
+    std::string calculate_merkle_root(const std::vector<Transaction>& transactions){
+        if(transactions.empty()) return "empty_root_lalalala";
+
+        std::vector<std::string> hashes;
+        for(const auto& txn: transactions){
+            std::string serializedTxn = serialize_transaction(txn);
+            hashes.push_back(sha256(serializedTxn));
+        }
+
+        while(hashes.size() > 1){
+            std::vector<std::string> newHashes;
+            for(size_t i = 0; i < hashes.size(); i+=2){
+                std::string combinedHash;
+                if(i + 1 < hashes.size()){ // since we wanna like pair hashes and hash em up, we check if 
+                //  next element exists in the vector
+                    combinedHash = hashes[i] + hashes[i+1];
+                }
+                else{
+                    combinedHash = hashes[i];
+                }
+                newHashes.push_back(sha256(combinedHash));
+            }
+            hashes = newHashes;
+        }
+        return hashes[0];
     }
 }

@@ -1,5 +1,4 @@
 #include "crypto.h"
-#include <sstream>
 #include <iomanip>
 
 namespace Crypto{
@@ -16,6 +15,7 @@ namespace Crypto{
         for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
             ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
         }
+        ss << std::dec;
         return ss.str();
     }
 
@@ -26,11 +26,13 @@ namespace Crypto{
         ss << static_cast<int>(txn.interaction_type)
            << txn.transaction_id
            << txn.transaction_time
-           << txn.user_id;
+           << txn.user_id
+           << static_cast<int>(txn.mod_stat)
+           << txn.signature;
 
-        if(txn.post.post_transaction){
-            ss << txn.post.post_id
-               << static_cast<int>(txn.post.post_type) 
+        if(txn.post.post_type != Post_Interaction_Type::NA){
+            ss << static_cast<int>(txn.post.post_type)
+               << txn.post.post_id 
                << txn.post.like_count << txn.post.dislike_count << txn.post.comment_count
                << txn.post.post_content_id << txn.post.post_media_url;
             for (const auto& comment_id : txn.post.comment_ids) {
@@ -38,11 +40,11 @@ namespace Crypto{
             }
         }
 
-        if(txn.comment.comment_transaction){
-            ss << txn.comment.comment_id
-               << static_cast<int>(txn.comment.comment_type)
+        if(txn.comment.comment_type != Comment_Interaction_Type::NA){
+            ss << static_cast<int>(txn.comment.comment_type)
+               << txn.comment.comment_id
+               << txn.comment.parent_post_id << txn.comment.parent_comment_id
                << txn.comment.like_count << txn.comment.dislike_count << txn.comment.reply_count
-               << (txn.comment.parent_post_id ? txn.comment.parent_post_id : 0) << (txn.comment.parent_comment_id ? txn.comment.parent_comment_id : 0)
                << txn.comment.comment_content_id << txn.comment.comment_media_url;
             for (const auto& reply_id : txn.comment.reply_ids) {
                 ss << reply_id;
@@ -53,6 +55,13 @@ namespace Crypto{
             ss << txn.vote.post_id
                << txn.vote.comment_id
                << txn.vote.vote_type;
+        }
+
+        if(txn.wallet.wallet_type != Wallet_Interaction_Type::NA){
+            ss << static_cast<int>(txn.wallet.wallet_type)
+               << txn.wallet.wallet_public_key
+               << txn.wallet.wallet_address
+               << txn.wallet.wallet_balance;
         }
 
         return ss.str();
@@ -68,16 +77,12 @@ namespace Crypto{
         }
 
         while(hashes.size() > 1){
+            if(hashes.size() % 2 == 1){
+                hashes.push_back(hashes.back()); // if there are odd number of hashes, typically the last hash is duplicated to facilitate proper pairing
+            }
             std::vector<std::string> newHashes;
             for(size_t i = 0; i < hashes.size(); i+=2){
                 std::string combinedHash;
-                if(i + 1 < hashes.size()){ // since we wanna like pair hashes and hash em up, we check if 
-                //  next element exists in the vector
-                    combinedHash = hashes[i] + hashes[i+1];
-                }
-                else{
-                    combinedHash = hashes[i];
-                }
                 newHashes.push_back(sha256(combinedHash));
             }
             hashes = newHashes;

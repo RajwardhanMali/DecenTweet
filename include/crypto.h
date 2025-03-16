@@ -1,6 +1,7 @@
 #pragma once
 #include "transaction.h"
 #include <openssl/sha.h>
+#include <sstream>
 
 namespace Crypto{
     std::string sha256(const std::string& data);
